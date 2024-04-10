@@ -1,51 +1,36 @@
 
-# Fusio-Worker-Python
+Fusio Python CLI sample
+=====
 
-A Fusio worker implementation to execute Python code.
-More information about the worker API at:
-https://www.fusio-project.org/documentation/worker
+# About
 
-## Example
-
-The following example shows an action written in Python which gets data
-from a database and returns a response
+This is a simple Python CLI application which shows how to use the Python SDK to access a Fusio instance.
+In this example we simply output all registered routes.
+Fusio is an open source API management which helps to build and manage great APIs more information at:
+https://www.fusio-project.org/
 
 ```python
-def handle(request, context, connector, response, dispatcher, logger):
+from sdk.client import Client
+from sdkgen import OAuth2, MemoryTokenStore
 
-    connection = connector.getConnection('my_db')
+tokenStore = MemoryTokenStore()
+scopes = ["backend"]
 
-    cursor = connection.cursor()
-    cursor.execute("""SELECT * FROM app_todo""")
-    result = cursor.fetchall()
-    cursor.close()
+credentials = OAuth2(
+    "test",
+    "FRsNh1zKCXlB",
+    "https://demo.fusio-project.org/authorization/token",
+    "",
+    tokenStore,
+    scopes
+)
 
-    data = []
-    for row in result:
-        data.append({
-            'id': row[0],
-            'status': row[1],
-            'title': row[2],
-            'insert_date': str(row[3])
-        })
+client = Client("https://demo.fusio-project.org", credentials)
 
-    return response.build(200, None, {
-        'foo': 'bar',
-        'result': data
-    })
+print("Operations:")
+collection = client.backend().operation().get_all(0, 16, "")
+
+for operation in collection.entry:
+    print(" * " + operation.http_method + " " + operation.http_path)
 
 ```
-
-## Types
-
-This table contains an overview which connection types are implemented
-and which implementation is used:
-
-| Type | Implementation |
-| ---- | -------------- |
-| `Fusio.Adapter.Sql.Connection.Sql` | `PyMySQL / pymongo`
-| `Fusio.Adapter.Sql.Connection.SqlAdvanced` | `PyMySQL / pymongo`
-| `Fusio.Adapter.Http.Connection.Http` | `http.client`
-| `Fusio.Adapter.Mongodb.Connection.MongoDB` | `pymongo`
-| `Fusio.Adapter.Elasticsearch.Connection.Elasticsearch` | `elasticsearch`
-
