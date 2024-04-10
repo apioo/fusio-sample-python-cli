@@ -1,0 +1,4 @@
+fusio-sdk~=5.0
+sdkgen-client~=0.2.2
+requests~=2.31.0
+pydantic~=2.6.4
